@@ -1,0 +1,26 @@
+{
+    "name": "uco/sso",
+    "description": "Package description here.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "duc",
+            "email": "1025434218@qq.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Uco\\Sso\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Uco\\Sso\\SsoServiceProvider"
+            ]
+        }
+    }
+}

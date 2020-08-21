@@ -6,7 +6,7 @@ namespace DucCnzj\Sso;
 
 use GuzzleHttp\Client;
 
-class Http
+class HttpClient
 {
     private static $client;
 

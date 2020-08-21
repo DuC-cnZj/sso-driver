@@ -12,7 +12,7 @@ class SsoGuard
             $res = HttpClient::instance()->post($this->routeUserInfo, ['headers' => ['X-Request-Token' => $token]]);
 
             if ($res->getStatusCode() == 200) {
-                return new User(json_decode($res->body())->data);
+                return new User(json_decode($res->getBody()->getContents())->data);
             }
         }
 

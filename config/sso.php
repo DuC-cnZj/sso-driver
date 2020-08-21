@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'base_url' => env("SSO_BASE_URL"),
+    'base_url' => rtrim(env("SSO_BASE_URL"), '/'),
 ];

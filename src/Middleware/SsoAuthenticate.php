@@ -25,13 +25,13 @@ class SsoAuthenticate implements AuthenticatesRequests
     protected function authenticate(Request $request, $guard)
     {
         if (! session()->has('sso_token') && ($accessToken = $request->access_token)) {
-            $res = HttpClient::instance()->request('POST', '/access_token', ['body' => ['access_token' => $accessToken]]);
+            $res = HttpClient::instance()->request('POST', '/access_token', ['form_params' => ['access_token' => $accessToken]]);
 
             if ($res->getStatusCode() != 200) {
                 $this->unauthenticated($request, [$guard]);
             }
 
-            session()->put('sso_token', $res['api_token']);
+            session()->put('sso_token', json_decode($res->getBody()->getContents())->api_token);
         }
 
         if (auth($guard)->check()) {

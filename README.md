@@ -5,7 +5,7 @@
 ## Installing
 
 ```shell
-$ composer require uco/sso -vvv
+$ composer require duc_cnzj/sso -vvv
 ```
 
 ## Usage

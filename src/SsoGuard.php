@@ -1,25 +1,17 @@
 <?php
 
-namespace Uco\Sso;
-
-use Illuminate\Support\Facades\Http;
+namespace DucCnzj\Sso;
 
 class SsoGuard
 {
-    private $baseUrl;
-
-    private $routeUserInfo = '/user/info';
-
-    public function __construct()
-    {
-        $this->baseUrl = config('sso.base_url');
-    }
+    private $routeUserInfo = '/api/user/info';
 
     public function __invoke()
     {
         if ($token = session()->get('sso_token')) {
-            $res = Http::withHeaders(['X-Request-Token' => $token])->post($this->baseUrl . $this->routeUserInfo);
-            if ($res->ok()) {
+            $res = Http::instance()->post($this->routeUserInfo, ['headers' => ['X-Request-Token' => $token]]);
+
+            if ($res->getStatusCode() == 200) {
                 return new User(json_decode($res->body())->data);
             }
         }

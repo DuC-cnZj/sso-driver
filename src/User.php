@@ -1,6 +1,6 @@
 <?php
 
-namespace Uco\Sso;
+namespace DucCnzj\Sso;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;

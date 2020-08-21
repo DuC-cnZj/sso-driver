@@ -1,11 +1,11 @@
 <?php
 
-namespace Uco\Sso;
+namespace DucCnzj\Sso;
 
 use Illuminate\Auth\RequestGuard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use Uco\Sso\Middleware\SsoAuthenticate;
+use DucCnzj\Sso\Middleware\SsoAuthenticate;
 
 class SsoServiceProvider extends ServiceProvider
 {
@@ -31,6 +31,12 @@ class SsoServiceProvider extends ServiceProvider
     {
         $this->aliasMiddleware();
         $this->configureGuard();
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../config/sso.php' => config_path('sso.php'),
+            ], 'sso');
+        }
     }
 
     protected function configureGuard()

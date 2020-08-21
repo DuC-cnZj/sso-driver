@@ -1,10 +1,10 @@
 <?php
 
-namespace Uco\Sso\Middleware;
+namespace DucCnzj\Sso\Middleware;
 
 use Closure;
+use DucCnzj\Sso\Http;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 
@@ -25,9 +25,9 @@ class SsoAuthenticate implements AuthenticatesRequests
     protected function authenticate(Request $request, $guard)
     {
         if (! session()->has('sso_token') && ($accessToken = $request->access_token)) {
-            $res = Http::asJson()->post(config('sso.base_url') . '/access_token', ['access_token' => $accessToken]);
+            $res = Http::instance()->request('POST', '/access_token', ['body' => ['access_token' => $accessToken]]);
 
-            if ($res->failed()) {
+            if ($res->getStatusCode() != 200) {
                 $this->unauthenticated($request, [$guard]);
             }
 

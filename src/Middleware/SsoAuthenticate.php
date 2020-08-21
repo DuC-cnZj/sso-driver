@@ -5,6 +5,9 @@ namespace DucCnzj\Sso\Middleware;
 use Closure;
 use DucCnzj\Sso\HttpClient;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 
@@ -25,13 +28,18 @@ class SsoAuthenticate implements AuthenticatesRequests
     protected function authenticate(Request $request, $guard)
     {
         if (! session()->has('sso_token') && ($accessToken = $request->access_token)) {
-            $res = HttpClient::instance()->request('POST', '/access_token', ['form_params' => ['access_token' => $accessToken]]);
+            try {
+                $res = HttpClient::instance()->request('POST', '/access_token', ['json' => ['access_token' => $accessToken]]);
 
-            if ($res->getStatusCode() != 200) {
-                $this->unauthenticated($request, [$guard]);
+                session()->put('sso_token', json_decode($res->getBody()->getContents())->api_token);
+            } catch (GuzzleException $e) {
+                if ($e instanceof ClientException) {
+                    Log::error($e);
+                    $this->unauthenticated($request, [$guard]);
+                }
+
+                throw $e;
             }
-
-            session()->put('sso_token', json_decode($res->getBody()->getContents())->api_token);
         }
 
         if (auth($guard)->check()) {

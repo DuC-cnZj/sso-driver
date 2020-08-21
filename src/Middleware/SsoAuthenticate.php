@@ -15,7 +15,7 @@ class SsoAuthenticate implements AuthenticatesRequests
 {
     protected function redirectTo(Request $request)
     {
-        return config('sso.base_url') . '/login?redirect_url=' . $request->url();
+        return config('sso.base_url') . '/' . config('sso.login_url') . '?redirect_url=' . $request->url();
     }
 
     public function handle($request, Closure $next)
@@ -27,11 +27,11 @@ class SsoAuthenticate implements AuthenticatesRequests
 
     protected function authenticate(Request $request, $guard)
     {
-        if (! session()->has('sso_token') && ($accessToken = $request->access_token)) {
+        if (!session()->has(config('sso.session_field')) && ($accessToken = $request->access_token)) {
             try {
-                $res = HttpClient::instance()->request('POST', '/access_token', ['json' => ['access_token' => $accessToken]]);
+                $res = HttpClient::instance()->request('POST', '/' . config('sso.access_url'), ['json' => ['access_token' => $accessToken]]);
 
-                session()->put('sso_token', json_decode($res->getBody()->getContents())->api_token);
+                session()->put(config('sso.session_field'), json_decode($res->getBody()->getContents())->api_token);
             } catch (GuzzleException $e) {
                 if ($e instanceof ClientException) {
                     Log::error($e);
@@ -46,7 +46,7 @@ class SsoAuthenticate implements AuthenticatesRequests
             return auth()->shouldUse($guard);
         }
 
-        session()->forget('sso_token');
+        session()->forget(config('sso.session_field'));
 
         $this->unauthenticated($request, [$guard]);
     }

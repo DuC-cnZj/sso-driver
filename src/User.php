@@ -6,12 +6,12 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class User implements Authenticatable
 {
-    private $id;
-    private $name;
-    private $email;
-    private $roles;
-    private $permissions;
-    private $originalData;
+    public $id;
+    public $name;
+    public $email;
+    public $roles;
+    public $permissions;
+    public $originalData;
 
     public function __construct(\stdClass $data)
     {

@@ -2,9 +2,7 @@
 
 namespace DucCnzj\Sso;
 
-use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Arr;
 
 class User implements Authenticatable
 {
@@ -80,6 +78,13 @@ class User implements Authenticatable
 
     public function getRememberTokenName()
     {
+    }
+
+    public function logout()
+    {
+        if ($token = session()->get(config('sso.session_field'))) {
+            HttpClient::instance()->post(config('sso.base_url') . '/' . config('sso.logout_url'), ['headers' => ['X-Request-Token' => $token]]);
+        }
     }
 
     public function __get($name)

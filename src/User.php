@@ -9,6 +9,7 @@ use Illuminate\Support\Arr;
 class User implements Authenticatable
 {
     private $id;
+    private $name;
     private $email;
     private $roles;
     private $permissions;
@@ -17,6 +18,7 @@ class User implements Authenticatable
     public function __construct(\stdClass $data)
     {
         $this->id = data_get($data, 'id', null);
+        $this->name = data_get($data, 'user_name', null);
         $this->email = data_get($data, 'email', null);
         $this->roles = data_get($data, 'roles', []);
         $this->permissions = data_get($data, 'permissions', []);
@@ -78,5 +80,10 @@ class User implements Authenticatable
 
     public function getRememberTokenName()
     {
+    }
+
+    public function __get($name)
+    {
+        return data_get($this->originalData, $name, null);
     }
 }

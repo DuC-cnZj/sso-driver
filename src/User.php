@@ -4,25 +4,59 @@ namespace DucCnzj\Sso;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Arr;
 
 class User implements Authenticatable
 {
     private $id;
     private $email;
-    private $lastLoginAt;
+    private $roles;
+    private $permissions;
     private $originalData;
 
     public function __construct(\stdClass $data)
     {
-        $this->id = $data->id;
-        $this->email = $data->email;
-        $this->lastLoginAt = $data->last_login_at ? Carbon::parse($data->last_login_at) : null;
+        $this->id = data_get($data, 'id', null);
+        $this->email = data_get($data, 'email', null);
+        $this->roles = data_get($data, 'roles', []);
+        $this->permissions = data_get($data, 'permissions', []);
         $this->originalData = $data;
     }
 
     public function getAuthIdentifierName()
     {
         return 'id';
+    }
+
+    public function roles()
+    {
+        return $this->roles;
+    }
+
+    public function permissions()
+    {
+        return collect($this->permissions)
+            ->filter(function ($item) {
+                return data_get($item, 'project') == config('sso.project');
+            })
+            ->pluck('name')
+            ->values()
+            ->all();
+    }
+
+    public function hasRole($name)
+    {
+        return in_array($name, $this->roles);
+    }
+
+    public function hasPermission($name)
+    {
+        return collect($this->permissions)
+            ->filter(function ($item) {
+                return data_get($item, 'project') == config('sso.project');
+            })
+            ->pluck('name')
+            ->contains($name);
     }
 
     public function getAuthIdentifier()

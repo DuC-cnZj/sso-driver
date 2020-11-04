@@ -61,7 +61,7 @@ class User implements Authenticatable
 
     public function getAuthIdentifier()
     {
-        return optional($this->originalData)->id;
+        return optional($this->originalData)->{$this->getAuthIdentifierName()};
     }
 
     public function getAuthPassword()

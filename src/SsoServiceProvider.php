@@ -22,6 +22,15 @@ class SsoServiceProvider extends ServiceProvider
             ], config('auth.guards.sso', [])),
         ]);
 
+        $this->app->singleton(TokenStorageImp::class, function () {
+            switch (config('sso.mode')) {
+                case 'api':
+                    return new ApiTokenStorage();
+                default:
+                    return new SessionTokenStorage();
+            }
+        });
+
         if (! $this->app->configurationIsCached()) {
             $this->mergeConfigFrom(__DIR__ . '/../config/sso.php', 'sso');
         }
@@ -62,7 +71,7 @@ class SsoServiceProvider extends ServiceProvider
     private function createGuard($auth, array $config)
     {
         return new RequestGuard(
-            new SsoGuard(),
+            new SsoGuard(app(TokenStorageImp::class)),
             $this->app['request'],
             $auth->createUserProvider()
         );

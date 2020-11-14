@@ -1,8 +1,6 @@
 <?php
 
-
 namespace DucCnzj\Sso;
-
 
 use GuzzleHttp\Client;
 

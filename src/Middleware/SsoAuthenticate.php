@@ -5,6 +5,7 @@ namespace DucCnzj\Sso\Middleware;
 use Closure;
 use DucCnzj\Sso\HttpClient;
 use Illuminate\Http\Request;
+use DucCnzj\Sso\TokenStorageImp;
 use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -13,6 +14,16 @@ use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 
 class SsoAuthenticate implements AuthenticatesRequests
 {
+    /**
+     * @var TokenStorageImp
+     */
+    private TokenStorageImp $storageImp;
+
+    public function __construct(TokenStorageImp $storageImp)
+    {
+        $this->storageImp = $storageImp;
+    }
+
     protected function redirectTo(Request $request)
     {
         return config('sso.base_url') . '/' . config('sso.login_url') . '?redirect_url=' . $request->url();
@@ -27,11 +38,11 @@ class SsoAuthenticate implements AuthenticatesRequests
 
     protected function authenticate(Request $request, $guard)
     {
-        if (!session()->has(config('sso.session_field')) && ($accessToken = $request->access_token)) {
+        if (! $this->storageImp->has(config('sso.token_field')) && ($accessToken = $request->access_token)) {
             try {
                 $res = HttpClient::instance()->request('POST', '/' . config('sso.access_url'), ['json' => ['access_token' => $accessToken]]);
 
-                session()->put(config('sso.session_field'), json_decode($res->getBody()->getContents())->api_token);
+                $this->storageImp->set(config('sso.token_field'), json_decode($res->getBody()->getContents())->api_token);
             } catch (GuzzleException $e) {
                 if ($e instanceof ClientException) {
                     Log::error($e);
@@ -46,15 +57,18 @@ class SsoAuthenticate implements AuthenticatesRequests
             return auth()->shouldUse($guard);
         }
 
-        session()->forget(config('sso.session_field'));
+        $this->storageImp->remove(config('sso.token_field'));
 
         $this->unauthenticated($request, [$guard]);
     }
 
-    protected function unauthenticated($request, array $guards)
+    protected function unauthenticated(Request $request, array $guards)
     {
+        $ssoUrl = config('sso.base_url') . '/' . config('sso.login_url');
+        $message = $request->expectsJson() ? 'Unauthenticated. should redirect to ' . $ssoUrl : 'Unauthenticated. ';
+
         throw new AuthenticationException(
-            'Unauthenticated.',
+            $message,
             $guards,
             $this->redirectTo($request)
         );

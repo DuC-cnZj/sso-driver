@@ -2,16 +2,26 @@
 
 namespace DucCnzj\Sso;
 
-use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Exception\ClientException;
 
 class SsoGuard
 {
+    /**
+     * @var TokenStorageImp
+     */
+    private TokenStorageImp $storageImp;
+
+    public function __construct(TokenStorageImp $storageImp)
+    {
+        $this->storageImp = $storageImp;
+    }
+
     public function __invoke()
     {
-        if ($token = session()->get(config('sso.session_field'))) {
+        if ($token = $this->storageImp->get(config('sso.token_field'))) {
             try {
-                $res = HttpClient::instance()->post('/' . sprintf(config("sso.user_info"), config("sso.project")), ['headers' => ['X-Request-Token' => $token]]);
+                $res = HttpClient::instance()->post('/' . sprintf(config('sso.user_info'), config('sso.project')), ['headers' => ['X-Request-Token' => $token]]);
 
                 return new User(json_decode($res->getBody()->getContents())->data);
             } catch (\Throwable $e) {

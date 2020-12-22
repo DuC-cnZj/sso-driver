@@ -70,7 +70,12 @@ class SsoServiceProvider extends ServiceProvider
 
     private function createGuard($auth, array $config)
     {
-        return new RequestGuard(
+        return (new class extends RequestGuard {
+            public function logout()
+            {
+                auth()->user()->logout();
+            }
+        })(
             new SsoGuard(app(TokenStorageImp::class)),
             $this->app['request'],
             $auth->createUserProvider()

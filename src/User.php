@@ -82,7 +82,7 @@ class User implements Authenticatable
 
     public function logout()
     {
-        if ($token = session()->get(config('sso.token_field'))) {
+        if (config('sso.mode') == 'web' && $token = session()->get(config('sso.token_field'))) {
             HttpClient::instance()->post(config('sso.base_url') . '/' . config('sso.logout_url'), ['headers' => ['X-Request-Token' => $token]]);
         }
     }

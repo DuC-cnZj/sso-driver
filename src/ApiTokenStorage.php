@@ -12,7 +12,6 @@ class ApiTokenStorage implements TokenStorageImp
     public function set($name, $value)
     {
         request()->headers->set($name, $value);
-//        response()->headers->set($name, $value);
     }
 
     public function has($name): bool
